@@ -1,37 +1,23 @@
 \chapter{Running software on Nux}
 \label{ch:usesw}
 
-Executing a program on Nux in hardware or simulation requires three steps outlined in the next three sections.
-First, you have to build a cross-compiler for the PowerISA.
-If you want to use \gls{fxv} instructions, binutils needs to be patched.
+Executing a program on Nux in hardware or simulation requires three steps outlined in the next sections.
+First, you have to install the cross-compilation toolchain for the PowerISA.
+The compilation and linking of the programs for the Nux is described next.
 For the actual execution implementation specific software is required to interface with Nux.
 
 
-\section{Building a cross-compiler}
-Any cross-compiler will do that emits code for the target triple ``powerpc-linux-eabi'', i.e.\ Power instruction set architecture using the \gls{eabi} \citep{IBM1998} for Linux.
-Although the latter is probably irrelevant.
-In the repository an installation script is provided to compile gcc from source (\file{support/gcc/install.sh}).
+\section{Building binutils and the cross-compiler}
+Any cross-compiler will do that emits code for the target ``powerpc-eabi'', i.e.\ Power instruction set architecture using the \gls{eabi} \citep{IBM1998}.
+There exists however a gcc and binutils version with basic support for the vector instructions at \url{https://github.com/electronicvisions/gcc} and \url{https://github.com/electronicvisions/binutils-gdb}.
+An installation script is provided in the Nux repository to download and compile the patched gcc-toolchain for the processor from source (\file{support/gcc/install.sh}).
 You may want to change the \code{PREFIX} variable at the top to select the target installation directory.
-You may also want to select newer package versions if available or modify mirror locations if there are errors while downloading.
-System libraries (e.g.\ mpfr, gmp, mpc, \ldots) should be used over manually compile ones.
-Refer to \cite{installgcc} for required minimum versions.
+The gcc with vector instruction support is currently at the version 4.9 and therefore depends on outdated libraries.
+The dependencies downloaded in the install script (e.g.\ mpfr, gmp, mpc, \ldots) should be preferred over the most recent versions in order to avoid failing builds due to version incompatibilities.
+Refer to \cite{installgcc} for further dependencies and required minimum versions.
 
-The goal of the installation script is to build a minimal gcc with support for C but without libc.
-
-
-\section{Patching binutils for vector operations}
-
-A patch for binutils is provided in directory \file{support/binutils/}.
-To apply use patch:
-\begin{lstlisting}[language=bash]
-    $ tar jxf binutils-2.25.tar.bz2
-    $ patch -p0 <binutils-2.25.patch
-\end{lstlisting}
-Then compile using the install script.
-
-This patch simply adds the non-standard \gls{fxv} instructions to the PowerPC opcode table in binutils.
-It thereby enables support for these instructions by the assembler and disassembler (\texttt{objdump -d}).
-Therefore, instructions can also be used in gcc inline assembly.
+The goal of the installation script is to build a minimal gcc and binutils with support for C but without libc.
+Support for C++ is added to the compiler while still being experimental.
 
 
 \section{Compiling programs}
@@ -39,13 +25,21 @@ Therefore, instructions can also be used in gcc inline assembly.
 The processor starts execution after reset is released at address 0.
 Also, exceptions trigger a control transfer to fixed locations in the range from address 4 to 44.
 The final result of compilation is therefore to generate a binary image that can be written to memory with valid code at the correct addresses.
-This is achieved by a special linker script \code{linker.x} and an assembler wrapper \code{cshell.s}.
+This is achieved by a special linker script \code{elf32nux.x} and the C runtime \code{crt.s}.
+An example linker script and C runtime can be found in the libnux at \url{https://github.com/electronicvisions/libnux}.
 
 
-\subsection{Assembly wrapper for C code}
+\subsection{C runtime}
+The C runtime is a wrapper for the compiled code with various tasks
+\begin{itemize}
+	\item initialize the stack pointer
+	\item declare interrupt routines
+	\item start the execution of the compiled program at the correct symbol
+	\item resume into a well defined state at the end of the program
+\end{itemize}
 An example wrapper is discussed below:
 \begin{lstlisting}[language=powerasm]
-# chsell.s -- part a
+# crt.s -- part a
 .extern start 
 .extern reset
 .extern _isr_undefined
@@ -65,7 +59,7 @@ The \code{isr_*} symbols on lines 5 to 10 represent interrupt service routines.
 The \code{_isr_undefined} symbol is a default handler that is used if no service routine is defined.
 
 \begin{lstlisting}[language=powerasm]
-# chsell.s -- part b
+# crt.s -- part b
 .text
 .extern _start:
 reset:
@@ -93,7 +87,7 @@ It consists of branches to interrupt service routines, which are located at the 
 
 
 \begin{lstlisting}[language=powerasm]
-# chsell.s -- part c
+# crt.s -- part c
 __init:
 	# set the stack pointer
 	lis 1, stack_ptr_init@h
@@ -105,7 +99,7 @@ end_loop:
 	wait
 	b end_loop
 \end{lstlisting}
-This fragment initialises the stack pointer in general-purpose register 1 as defined by the \gls{eabi} \citep{IBM1998}.
+This fragment initializes the stack pointer in general-purpose register 1 as defined by the \gls{eabi} \citep{IBM1998}.
 The symbol \code{stack_ptr_init} is defined by the linker script to match the size of the implemented memory.
 After initialization on line 7, the wrapper calls the user code at the \code{start} symbol.
 If user code returns from the start() function, the loop at the end sends the processor to sleep.
@@ -114,7 +108,7 @@ On return from the service routine, the branch on line 11 ensures a return to th
 
 
 \subsection{Linker script}
-The linker script \code{linker.x} is passed to the linker to configure how the resulting binary is generated.
+The linker script \code{elf32nux.x} is passed to the linker to configure how the resulting binary is generated.
 An example is discussed below:
 
 \begin{lstlisting}
@@ -136,7 +130,7 @@ stack_ptr_init = mailbox_base - 8;
 The intention here is to create a reserved memory region at the end called mailbox.
 This is used for communication with the environment by software running on Nux.
 The stack pointer is initialized to start at lower addresses than the mailbox region.
-Note, that the \file{cshell.s} wrapper uses the \code{stack_ptr_init} symbol to do the actual initialization of register 1.
+Note, that the \file{crt.s} wrapper uses the \code{stack_ptr_init} symbol to do the actual initialization of register 1.
 
 
 \begin{lstlisting}
@@ -144,7 +138,7 @@ SECTIONS {
 	.text : {
         _isr_undefined = .;
 
-        *cshell.o(.text)
+        *crt.o(.text)
         *(.text)
 
         PROVIDE(isr_einput = _isr_undefined);
@@ -194,19 +188,20 @@ Generating the final binary image involves three steps:
 \end{enumerate}
 
 The following examples assume an architecture with single main memory as shown in Figure~\ref{fig:ppuinst}.
-When using two memories, two images have to be extracted at the end, which requires a different \code{linker.x} file as the one shown above.
-The examples also assume, that gcc binaries are visible through the \code{PATH} variable and that it was installed with prefix \code{powerpc-linux-eabi}.
+When using two memories, two images have to be extracted at the end, which requires a different \code{elf32nux.x} file as the one shown above.
+The examples also assume, that gcc binaries are visible through the \code{PATH} variable and that it was installed with prefix \code{powerpc-eabi}.
 
 
 \subsubsection{Compiling}
 
 The assembly wrapper has to be assembled:
 \begin{lstlisting}
-    $ powerpc-linux-eabi-as -mpower7 cshell.s -o cshell.o
+    $ powerpc-eabi-as -mnux crt.s -o crt.o
 \end{lstlisting}
 And C-source compiled:
 \begin{lstlisting}
-    $ powerpc-linux-eabi-gcc -c <sourcefile> -o <objectfile> \
+    $ powerpc-eabi-gcc -c <sourcefile> -o <objectfile> \
+        -mcpu=nux        \
         -ffreestanding   \
         -msdata=none     \
         -mstrict-align   \
@@ -214,27 +209,27 @@ And C-source compiled:
         -mno-relocatable
 \end{lstlisting}
 The exact meaning of options is given in \cite{gccmanual}.
-The first option on line 2 tells the compiler to use a ``freestanding'' environment.
+The option on line 3 tells the compiler to use a ``freestanding'' environment.
 From the gcc manual:
 \begin{quote}
    A freestanding environment is one in which the standard library may not exist, and program startup may not necessarily be at main.
    The most obvious example is an OS kernel. 
 \end{quote}
-Line 3 disables the use of the \code{.sdata} (small data) section in generated code.
+Line 4 disables the use of the \code{.sdata} (small data) section in generated code.
 Refer to \cite{IBM1998} to learn how this section would be used.
-Line 4 avoids unaligned memory accesses.
+Line 5 avoids unaligned memory accesses.
 The PowerISA allows embedded implementations to raise an exception on unaligned loads and stores, which is what this implementation does.
-Line 5 disables the use of floating point instructions.
+Line 6 disables the use of floating point instructions.
 Floating point math is instead implemented in software.
-Line 6 tells the compiler, that code may not be relocated to a different address at runtime.
+Line 7 tells the compiler, that code may not be relocated to a different address at runtime.
 
 
 \subsubsection{Linking}
 
 The executable is generated by the linker:
 \begin{lstlisting}
-    $ powerpc-linux-eabi-ld cshell.o <obj1.o> ... -o <binary.elf> \
-        -T linker.x  \
+$ powerpc-eabi-ld crt.o <obj1.o> ... -o <binary.elf> \
+        -T elf32nux.x  \
         -static      \
         -nostdlib    \
         -lgcc
@@ -252,7 +247,7 @@ See \cite{libgcc} for more information.
 
 The objcopy command from binutils allows to extract the raw bits from the executable:
 \begin{lstlisting}
-    $ powerpc-linux-eabi-objcopy -O binary <binary.elf> <image.raw>
+$ powerpc-eabi-objcopy -O binary <binary.elf> <image.raw>
 \end{lstlisting}
 
 
@@ -260,14 +255,20 @@ The objcopy command from binutils allows to extract the raw bits from the execut
 
 To inspect the resulting image you can use the hexdump program:
 \begin{lstlisting}
-    $ hexdump -C <image.raw>
+$ hexdump -C <image.raw>
 \end{lstlisting}
 It outputs a hex-dump to stdout.
 
 The executable can be inspected using readelf to get information about symbol (variables and functions) locations.
 Objdump contains a dissasembler:
 \begin{lstlisting}
-    $ powerpc-linux-eabi-objdump -d <binary.elf>
+$ powerpc-eabi-objdump -d <binary.elf>
+\end{lstlisting}
+The extracted binaries can be disassembled, too, when supplying the relevant information on the architecture and file format:
+\begin{lstlisting}
+$ powerpc-eabi-objdump \
+        -b binary -m powerpc -Mnux --endian=big \
+        -d <image.raw>
 \end{lstlisting}
 
 
@@ -277,7 +278,7 @@ The specifics of how to do this are defined by the system, in which the processo
 The binary image generated using objcopy has to be transferred to the memory in the system.
 During this time, the processor should be in reset, or you have to know what you are doing.
 After loading, reset is released to start the program.
-The \code{cshell.s} wrapper ensures, that the program goes into the sleep state when the user code terminates, i.e.\ returns from the start() function.
+The \code{crt.s} wrapper ensures, that the program goes into the sleep state when the user code terminates, i.e.\ returns from the start() function.
 
 
 
