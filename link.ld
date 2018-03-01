@@ -1,3 +1,5 @@
+ENTRY(_start)
+
 MEMORY {
 	ram (rwx) : ORIGIN = 0, LENGTH = 16K
 }
@@ -16,4 +18,6 @@ SECTIONS {
 		*(.bss)
 		*(.sbss)
 	} > ram
+
+	_end = .;
 }

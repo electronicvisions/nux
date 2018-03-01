@@ -1,13 +1,15 @@
-tests := load_immediate add 
+tests := load_immediate add external_memory_access
 
+.SUFFIXES: # Disable default rules
 .PHONY: all
-.PRECIOUS: %.elf
+.PRECIOUS: %.elf # Don't delete generated elf files
 
 all: $(patsubst %,%.bin, $(tests))
+# write test names into testcases file, so that they get executed automatically
 	@for x in $(tests) ; do echo "$$x 0 0" ; done > testcases
 
-%.o: %.s
-	@powerpc-eabi-as --warn -mnux $< -o $@
+%.o: %.S test_macros.h
+	@powerpc-eabi-as -mnux $< -o $@
 
 %.elf: %.o
 	@powerpc-eabi-ld -T link.ld $< -o $@
@@ -16,4 +18,6 @@ all: $(patsubst %,%.bin, $(tests))
 	@powerpc-eabi-objcopy -O binary $< $@
 
 clean:
-	remove testcases
+	@rm testcases
+	@rm *.elf
+	@rm *.bin

@@ -168,9 +168,7 @@ group insert \
     [subst  {[format {hx_chip_control_tb_top.hx_cc.omnibus_master_ppu_top.slave.MRespAccept}]} ] \
     [subst  {[format {hx_chip_control_tb_top.hx_cc.omnibus_master_ppu_top.slave.SCmdAccept}]} ] \
     [subst  {[format {hx_chip_control_tb_top.hx_cc.omnibus_master_ppu_top.slave.SData[31:0]}]} ] \
-    [subst  {[format {hx_chip_control_tb_top.hx_cc.omnibus_master_ppu_top.slave.SResp[1:0]}]} ] \
-    {### cdivider} \
-    [subst  {[format {hx_chip_control_tb_top.hx_cc.ppu_bottom.ppu.pu.fub_fxdpt.ir}]} ]
+    [subst  {[format {hx_chip_control_tb_top.hx_cc.omnibus_master_ppu_top.slave.SResp[1:0]}]} ]
 }
 
 if {[info exists createdGroup([list from_ppu_bot])]} {
@@ -230,10 +228,9 @@ group insert \
 set id [waveform add -signals [subst  {
 	{[format {hx_chip_control_tb_top.hx_cc.ppu_bottom.ppu.pu.fub_fxdpt.ir}]}
 	} ]]
-waveform hierarchy collapse $id
 set id [waveform add -signals [subst  {
 	{[format {hx_chip_control_tb_top.hx_cc.ppu_bottom.ppu.pu.gpr_file.gpr[0:31]}]}
 	} ]]
 waveform hierarchy expand $id
 
-waveform xview limits 0 14668000ps
+waveform xview limits 13875524.318ps 13915530.419ps

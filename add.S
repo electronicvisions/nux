@@ -1,16 +1,10 @@
-.macro  load_constant rD, const
-.if (\const >= -0x8000) && (\const <= 0x7fff)
-li      \rD, \const
-.else
-lis     \rD, \const@h
-ori     \rD, \rD, \const@l
-.endif
-.endm
+#include "test_macros.h"
+#include "chip_constants.h"
 
-.text
-.global _start
+	.text
+	.global _start
 _start:
-	load_constant 1, 0xffef
+	li 1,1
 	li 2,2
 	li 3,3
 	li 4,4
@@ -51,25 +45,20 @@ _start:
 	add 24,23,22
 	add 27,26,25
 	add 30,29,28
-	stw 3,4*0(0)
-	stw 6,4*1(0)
-	stw 9,4*2(0)
-	stw 12,4*3(0)
-	stw 15,4*4(0)
-	stw 18,4*5(0)
-	stw 21,4*6(0)
-	stw 24,4*7(0)
-	stw 27,4*8(0)
-	stw 30,4*9(0)
+	nop
+	nop
+	nop
+	nop
+	nop
 	nop
 	nop
 	lis 3,mail@ha
 	addi 3,3,mail@l
-	lwz 16, 272+4*0(0)
-	lwz 17, 272+4*1(0)
-	lwz 18, 272+4*2(0)
-	lwz 19, 272+4*3(0)
-	lwz 20, 272+4*4(0)
+	lwz 16, 4*0(3)
+	lwz 17, 4*1(3)
+	lwz 18, 4*2(3)
+	lwz 19, 4*3(3)
+	lwz 20, 4*4(3)
 	nop
 	nop
 	nop
