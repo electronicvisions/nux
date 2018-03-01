@@ -12,7 +12,7 @@
 `include "workarounds.svh"
 
 module Pu_v2
-	#(	
+	#(
 		/** Configure the branch predictor:
 		* 0  : Disable branch prediction
 		* >0 : Use branch prediction. The parameter then specifies how many
@@ -88,8 +88,8 @@ module Pu_v2
 	(	input logic             clk,
 		input logic             reset,
 
-		input logic             hold,  // actually: hold instruction fetch 
-		
+		input logic             hold,  // actually: hold instruction fetch
+
 		//Gpr_file.processor  gpr_file,
 		Ram_if.client           imem,
 		Ram_if.client           dmem,
@@ -97,11 +97,11 @@ module Pu_v2
 		Bus_if.master           iobus,
 		Bus_if.master           vector_bus,
 		Bus_if.master           vector_pbus,
-		
+
 		output Pu_types::Word   gout,
 		input  Pu_types::Word   gin,
 		output Pu_types::Word   goe,
-		
+
 		Pu_ctrl_if.pu           ctrl,
 		Timer_if.pu             timer,
 
@@ -222,7 +222,7 @@ Frontend_single #(
 
 	.dwb_ls(dwb_ls.frontend),
 	.dwb_io(dwb_io.frontend),
-	
+
 	.io_pipe_empty,
 	.ls_pipe_empty,
 	.vector_pipe_empty,
@@ -269,7 +269,9 @@ end
 
 `ARRAY_EXTRACT_IN(Issue_slot, issue, FUB_ID_FIXEDPOINT)
 `ARRAY_EXTRACT_OUT(Result_bus, res, FUB_ID_FIXEDPOINT)
-Fub_fixedpoint fub_fxdpt (
+Fub_fixedpoint #(.WITH_MULTIPLIER(1'b0), // we don't use the internal multiplier
+		 .WITH_DIVIDER(1'b0))    // and divider any more.
+fub_fxdpt (
 	.clk, .reset,
 	//.inst(issue[FUB_ID_FIXEDPOINT]),
 	.inst(`FROM_ARRAY(issue, FUB_ID_FIXEDPOINT)),
@@ -558,16 +560,16 @@ assign register_file_if.gin_in = gin;
 assign gout = register_file_if.gout;
 assign goe = register_file_if.goe;
 
-assign 
+assign
 	frontend_control.wakeup = ctrl.wakeup;
-assign 
+assign
 	int_sched_if.base_doorbell = ctrl.doorbell,
 	int_sched_if.base_ext_input = ctrl.ext_input,
 	ctrl.ext_input_ack = int_sched_if.base_ext_input_ack,
 	ctrl.doorbell_ack = int_sched_if.base_doorbell_ack,
 	ctrl.other_ack = int_sched_if.other_ack;
 
-assign 
+assign
 	ctrl.iccr = register_file_if.iccr,
 	ctrl.msr_ee = register_file_if.msr.ee;
 

@@ -66,6 +66,7 @@ Alu alu
 		.cout(alu_cout),
 		.crout(alu_crf) );
 
+// rotate left and mask  
 Rotm rotm
 	(	.clk(clk),
 		.reset(reset),
@@ -79,6 +80,7 @@ Rotm rotm
 		.cout(rotm_cout),
 		.cr(rotm_crf) );
 
+// special purpose register execution unit
 Spreu spreu
 	(	.clk(clk), .reset(reset),
 		.cr_op(ctrl.cr_op),

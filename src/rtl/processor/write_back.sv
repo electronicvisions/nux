@@ -11,7 +11,7 @@
 
 module Write_back
   ( input logic clk, reset,
-  
+
     Wb_channel_if.wb_channel c_gpr,
     Wb_channel_if.wb_channel c_cr,
     Wb_channel_if.wb_channel c_xer,
@@ -148,8 +148,12 @@ always_comb begin
   gpr_file.wa_sel = c_gpr.dest;
   gpr_file.wa_wr = c_gpr.we & get_valid(c_gpr.src);
   gpr_file.wa = get_res_a(c_gpr.src);
-  //$display("gpr_file.wa = get_res_a(%s) <- %08h",
-    //Frontend::fu_set_to_string(c_gpr.src), get_res_a(c_gpr.src));
+  // not used at the moment so tie them to zero...
+  gpr_file.wb_sel = '0;
+  gpr_file.wb = '0;
+  gpr_file.wb_wr = '0;
+
+  // $display("gpr_file.wa = get_res_a(%s) <- %08h", Frontend::fu_set_to_string(c_gpr.src), get_res_a(c_gpr.src));
 end
 
 //---------------------------------------------------------------------------
@@ -159,7 +163,7 @@ end
 assign cr_sel = c_cr.dest;
 
 
-assign 
+assign
   reg_read.cr = Cr_bits'(cr),
   reg_read.ctr = ctr,
   reg_read.lnk = lnk,
@@ -178,14 +182,14 @@ begin : writer
   end else begin
     if( c_cr.we && get_valid(c_cr.src) ) begin
       if( cr_sel[0] == 1'b1 )
-        cr[0] <= get_crf(c_cr.src);
+	cr[0] <= get_crf(c_cr.src);
 
       for(int i=1; i<8; i++)
-        if( cr_sel[i] == 1'b1 ) begin
-          Condition_register res_b;
-          res_b = Condition_register'(get_res_b(c_cr.src));
-          cr[i] <= res_b[i];
-        end
+	if( cr_sel[i] == 1'b1 ) begin
+	  Condition_register res_b;
+	  res_b = Condition_register'(get_res_b(c_cr.src));
+	  cr[i] <= res_b[i];
+	end
     end
 
     if( c_spr.we && (c_spr.dest == Spr_ctr) && get_valid(c_spr.src) )
@@ -195,28 +199,28 @@ begin : writer
     end
 
     if( c_spr.we && (c_spr.dest == Spr_lnk) && get_valid(c_spr.src) )
-        lnk <= get_res_a(c_spr.src);
+	lnk <= get_res_a(c_spr.src);
     else if( c_lnk.we && get_valid(c_lnk.src) ) begin
       if( c_lnk.src == FUB_BRANCH )
-        lnk <= get_res_b(FUB_BRANCH);
+	lnk <= get_res_b(FUB_BRANCH);
       else
-        lnk <= get_res_a(c_lnk.src);
+	lnk <= get_res_a(c_lnk.src);
     end
 
     if( c_spr.we && (c_spr.dest == Spr_xer) && get_valid(c_spr.src) )
       {xer, xer_padding} <= get_res_a(c_spr.src);
     else if( c_xer.we && get_valid(c_xer.src) ) begin
       if( c_xer.dest == XER_DEST_ALL )
-        {xer, xer_padding} <= get_res_a(c_xer.src);
+	{xer, xer_padding} <= get_res_a(c_xer.src);
       else if( c_xer.dest == XER_DEST_CA )
-        xer.ca <= get_cout(c_xer.src);
+	xer.ca <= get_cout(c_xer.src);
       else if( c_xer.dest == XER_DEST_OV ) begin
-        xer.ov <= get_ov(c_xer.src);
-        xer.so <= get_ov(c_xer.src) | xer.so;
+	xer.ov <= get_ov(c_xer.src);
+	xer.so <= get_ov(c_xer.src) | xer.so;
       end else if( c_xer.dest == XER_DEST_CA_OV ) begin
-        xer.ca <= get_cout(c_xer.src);
-        xer.ov <= get_ov(c_xer.src);
-        xer.so <= get_ov(c_xer.src) | xer.so;
+	xer.ca <= get_cout(c_xer.src);
+	xer.ov <= get_ov(c_xer.src);
+	xer.so <= get_ov(c_xer.src) | xer.so;
       end
     end
   end
@@ -309,32 +313,32 @@ always_ff @(posedge clk or posedge reset)
     esr.reserved4 <= '0;
 
 		if( c_spr.we && (c_spr.dest == Spr_dear) && get_valid(c_spr.src) )
-			dear <= get_res_a(c_spr.src); 
+			dear <= get_res_a(c_spr.src);
 		else if( reg_read.dear_we )
 			dear <= reg_read.dear_in;
 
 		if( c_spr.we && (c_spr.dest == Spr_srr0) && get_valid(c_spr.src) )
-			srr0 <= get_res_a(c_spr.src); 
+			srr0 <= get_res_a(c_spr.src);
 		else if( reg_read.srr_we )
 			srr0 <= reg_read.srr0_in;
 
 		if( c_spr.we && (c_spr.dest == Spr_srr1) && get_valid(c_spr.src) )
-			srr1 <= get_res_a(c_spr.src); 
+			srr1 <= get_res_a(c_spr.src);
 		else if( reg_read.srr_we )
 			srr1 <= reg_read.srr1_in;
-		
+
 		if( c_spr.we && (c_spr.dest == Spr_csrr0) && get_valid(c_spr.src) )
-			csrr0 <= get_res_a(c_spr.src); 
+			csrr0 <= get_res_a(c_spr.src);
 		else if( reg_read.csrr_we )
 			csrr0 <= reg_read.csrr0_in;
 
 		if( c_spr.we && (c_spr.dest == Spr_csrr1) && get_valid(c_spr.src) )
-			csrr1 <= get_res_a(c_spr.src); 
+			csrr1 <= get_res_a(c_spr.src);
 		else if( reg_read.csrr_we )
 			csrr1 <= reg_read.csrr1_in;
 
 		if( c_spr.we && (c_spr.dest == Spr_mcsrr0) && get_valid(c_spr.src) )
-			mcsrr0 <= get_res_a(c_spr.src); 
+			mcsrr0 <= get_res_a(c_spr.src);
 		else if( reg_read.mcsrr_we )
 			mcsrr0 <= reg_read.mcsrr0_in;
 
@@ -349,7 +353,7 @@ always_ff @(posedge clk or posedge reset)
 		iccr <= '0;
 	else
 		if( c_spr.we && (c_spr.dest == Spr_iccr) && get_valid(c_spr.src) )
-			iccr <= get_res_a(c_spr.src); 
+			iccr <= get_res_a(c_spr.src);
 
 //---------------------------------------------------------------------------
 // Timer facility channel
@@ -446,7 +450,7 @@ endmodule
 		//assign register_file.gpr_dest_2 = data.dout;
 
 		////---------------------------------------------------------------------------
-		//// Set GPR writeback enables 
+		//// Set GPR writeback enables
 		////---------------------------------------------------------------------------
 		//assign register_file.gpr_we = ctrl.wb_gpr_wr_alu & ctrl.en;
 		//assign register_file.gpr_we_2 = ctrl.wb_gpr_wr_mem & ctrl.en;
@@ -471,7 +475,7 @@ endmodule
 ////---------------------------------------------------------------------------
 //always_comb
 //begin : write_cr
-	//if( ctrl.wb_wr_cr ) 
+	//if( ctrl.wb_wr_cr )
 		//register_file.cr_in = data.wb_cr;
 	//else begin
 		//Cr_field cr;
@@ -654,7 +658,7 @@ endmodule
 		//8'b00000001: cr_field = register_file_cr[7];
 		//default:     cr_field = register_file_cr[0];
 	//endcase
-	
+
 
 	//unique case(ctrl.wb_reg_mv)
 		//Rmv_gtc: begin
@@ -695,7 +699,7 @@ endmodule
 				//default:     gpr_dest[31:28] = cr_field;
 			//endcase
 		//end
-		
+
 		//Rmv_ctc: begin
 			//pr_cr_wr = 1'b1;
 			//cr_in = cr_field;
@@ -717,7 +721,7 @@ endmodule
 
 		//Rmv_gts: begin
 			//// move from general purpose to special purpose register
-			
+
 			//unique casez(ctrl.wb_spr_sel)
 				//Spr_xer: begin
 					//pr_xer = data.res;

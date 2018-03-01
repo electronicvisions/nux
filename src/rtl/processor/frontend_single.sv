@@ -14,7 +14,7 @@
 module Frontend_single
   #(parameter int OPT_BCACHE = 0,
     parameter int OPT_IF_LATENCY = 1,
-		parameter Pu_types::Opt_mem OPT_DMEM = Pu_types::MEM_TIGHT,
+    parameter Pu_types::Opt_mem OPT_DMEM = Pu_types::MEM_TIGHT,
     parameter bit OPT_BCACHE_IGNORES_JUMPS = 1'b0,
     parameter bit OPT_BUFFER_BCTRL = 1'b0,
     parameter bit OPT_WRITE_THROUGH = 1'b1,

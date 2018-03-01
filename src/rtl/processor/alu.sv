@@ -82,16 +82,6 @@ Isel isel
 		.crout(isel_cr)
 	);
 
-/*Rotm rotm
-	(	.x(a),
-		.q(b),
-		.num(ctrl.rot_dist),
-		.mstart(ctrl.rot_start),
-		.mstop(ctrl.rot_stop),
-		.y(rotm_res),
-		.cout(rotm_cout),
-		.cr(rotm_cr) );*/
-
 Popcnt popcnt
 	(	.x(a),
 		.cnt_bytes(1'b1),
@@ -106,27 +96,12 @@ Cntlz cntlz (
 	.y(cntlz_res),
 	.crout(cntlz_cr)
 );
-
-/** handle condition register logical operation */
-/*Cr_logic  cr_logic
-	(	.cr_in(data_cr),
-		.sel_a(ctrl.crl_ba),
-		.sel_b(ctrl.crl_bb),
-		.sel_t(ctrl.crl_bt),
-		.op(op),
-		.cr_out(crl_cr) );*/
 //---------------------------------------------------------------------------
 
 
 //---------------------------------------------------------------------------
 // Reduce results
 //---------------------------------------------------------------------------
-//always_ff @(posedge clk or posedge reset)
-	//if( reset ) begin
-		//red_res <= '0;
-		//red_cr <= '0;
-		//red_cout <= 1'b0;
-	//end else begin
 always_comb begin
 		unique case(op)
 			Alu_add, Alu_sub, Alu_neg, Alu_cmp, Alu_cmpl: begin
@@ -134,14 +109,6 @@ always_comb begin
 				red_cr = adder_cr;
 				red_cout = adder_cout;
 			end
-
-			/*Alu_crand, Alu_crandc, Alu_cror, Alu_crorc,
-			Alu_crxor, Alu_crnand, Alu_crnor, Alu_creqv: begin
-				red_res = adder_res;
-				red_cr = crl_cr;
-				red_cout = adder_cout;
-			end*/
-
 			Alu_and, Alu_andc, Alu_or, Alu_orc,
 			Alu_xor, Alu_nand, Alu_nor, Alu_eqv: begin
 				red_res = logic_res;
@@ -166,25 +133,11 @@ always_comb begin
 				red_cr = adder_cr;
 				red_cout = adder_cout;
 			end
-
-			/*Alu_rotl: begin
-				red_res = rotm_res;
-				red_cr = rotm_cr;
-				red_cout = rotm_cout;
-			end*/
-
-			/*Alu_isel: begin
-				red_res = isel_res;
-				red_cr = isel_cr;
-				red_cout = adder_cout;
-			end*/
-
 			Alu_cntlz: begin
 				red_res = cntlz_res;
 				red_cr = cntlz_cr;
 				red_cout = adder_cout;
 			end
-				
 			default: begin
 				red_res = adder_res;
 				red_cr = adder_cr;

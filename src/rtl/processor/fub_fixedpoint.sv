@@ -9,7 +9,8 @@
 // under the License.
 
 
-module Fub_fixedpoint
+module Fub_fixedpoint #(parameter bit WITH_MULTIPLIER = 1'b1,
+			parameter bit WITH_DIVIDER = 1'b1)
   ( input logic clk, reset,
 
     input Frontend::Issue_slot inst,
@@ -145,10 +146,11 @@ begin
   ir_d = ir;
 end
 
-
+// TODO: Christian
+// Why is the multiplier and divider disabled?
 Fixedpoint #(
-  .WITH_MULTIPLIER(1'b0),
-  .WITH_DIVIDER(1'b0)
+  .WITH_MULTIPLIER(WITH_MULTIPLIER),
+  .WITH_DIVIDER(WITH_DIVIDER)
 ) fixedpoint(
   .clk,
   .reset,
