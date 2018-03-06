@@ -1,71 +1,71 @@
+# See LICENSE for license details.
+
+#include "ppc_test.h"
 #include "test_macros.h"
-#include "chip_constants.h"
 
-	.text
-	.global _start
-_start:
-	li 1,1
-	li 2,2
-	li 3,3
-	li 4,4
-	li 5,5
-	li 6,6
-	li 7,7
-	li 8,8
-	li 9,9
-	li 10,10
-	li 11,11
-	li 12,12
-	li 13,13
-	li 14,14
-	li 15,15
-	li 16,16
-	li 17,17
-	li 18,18
-	li 19,19
-	li 20,20
-	li 21,21
-	li 22,22
-	li 23,23
-	li 24,24
-	li 25,25
-	li 26,26
-	li 27,27
-	li 28,28
-	li 29,29
-	li 30,30
-	li 31,31
-	add 3,2,1
-	add 6,5,4
-	add 9,8,7
-	add 12,11,10
-	add 15,14,13
-	add 18,17,16
-	add 21,20,19
-	add 24,23,22
-	add 27,26,25
-	add 30,29,28
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	lis 3,mail@ha
-	addi 3,3,mail@l
-	lwz 16, 4*0(3)
-	lwz 17, 4*1(3)
-	lwz 18, 4*2(3)
-	lwz 19, 4*3(3)
-	lwz 20, 4*4(3)
-	nop
-	nop
-	nop
-	stw 19,0(20)
-	nop
-	nop
-	wait
+PPCTEST_CODE_BEGIN
+	#-------------------------------------------------------------
+	# Arithmetic tests
+	#-------------------------------------------------------------
 
-.data
-mail: .long 0xffff,0xeeee,0xaaaa,0xbbbb,4*200
+	TEST_RR_OP( 2,  add, 0x00000000, 0x00000000, 0x00000000 ) ;
+	TEST_RR_OP( 3,  add, 0x00000002, 0x00000001, 0x00000001 ) ;
+	TEST_RR_OP( 4,  add, 0x0000000a, 0x00000003, 0x00000007 ) ;
+	TEST_RR_OP( 5,  add, 0xffffffffffff8000, 0x0000000000000000, 0xffffffffffff8000 ) ;
+	TEST_RR_OP( 6,  add, 0xffffffff80000000, 0xffffffff80000000, 0x00000000 ) ;
+	TEST_RR_OP( 7,  add, 0xffffffff7fff8000, 0xffffffff80000000, 0xffffffffffff8000 ) ;
+
+	TEST_RR_OP( 8,  add, 0x0000000000007fff, 0x0000000000000000, 0x0000000000007fff ) ;
+	TEST_RR_OP( 9,  add, 0x000000007fffffff, 0x000000007fffffff, 0x0000000000000000 ) ;
+	TEST_RR_OP( 10, add, 0x0000000080007ffe, 0x000000007fffffff, 0x0000000000007fff ) ;
+
+	TEST_RR_OP( 11, add, 0xffffffff80007fff, 0xffffffff80000000, 0x0000000000007fff ) ;
+	TEST_RR_OP( 12, add, 0x000000007fff7fff, 0x000000007fffffff, 0xffffffffffff8000 ) ;
+
+	TEST_RR_OP( 13, add, 0xffffffffffffffff, 0x0000000000000000, 0xffffffffffffffff ) ;
+	TEST_RR_OP( 14, add, 0x0000000000000000, 0xffffffffffffffff, 0x0000000000000001 ) ;
+	TEST_RR_OP( 15, add, 0xfffffffffffffffe, 0xffffffffffffffff, 0xffffffffffffffff ) ;
+	TEST_RR_OP( 16, add, 0x0000000080000000, 0x0000000000000001, 0x000000007fffffff ) ;
+
+	#-------------------------------------------------------------
+	# Source/Destination tests
+	#-------------------------------------------------------------
+
+	TEST_RR_SRC1_EQ_DEST( 17, add, 24, 13, 11 ) ;
+	TEST_RR_SRC2_EQ_DEST( 18, add, 25, 14, 11 ) ;
+	TEST_RR_SRC12_EQ_DEST( 19, add, 26, 13 )  ;
+
+	#-------------------------------------------------------------
+	# Bypassing tests
+	#-------------------------------------------------------------
+
+	TEST_RR_DEST_BYPASS( 20, 0, add, 24, 13, 11 ) ;
+	TEST_RR_DEST_BYPASS( 21, 1, add, 25, 14, 11 ) ;
+	TEST_RR_DEST_BYPASS( 22, 2, add, 26, 15, 11 ) ;
+
+	TEST_RR_SRC12_BYPASS( 23, 0, 0, add, 24, 13, 11 ) ;
+	TEST_RR_SRC12_BYPASS( 24, 0, 1, add, 25, 14, 11 ) ;
+	TEST_RR_SRC12_BYPASS( 25, 0, 2, add, 26, 15, 11 ) ;
+	TEST_RR_SRC12_BYPASS( 26, 1, 0, add, 24, 13, 11 ) ;
+	TEST_RR_SRC12_BYPASS( 27, 1, 1, add, 25, 14, 11 ) ;
+	TEST_RR_SRC12_BYPASS( 28, 2, 0, add, 26, 15, 11 ) ;
+
+	TEST_RR_SRC21_BYPASS( 29, 0, 0, add, 24, 13, 11 ) ;
+	TEST_RR_SRC21_BYPASS( 30, 0, 1, add, 25, 14, 11 ) ;
+	TEST_RR_SRC21_BYPASS( 31, 0, 2, add, 26, 15, 11 ) ;
+	TEST_RR_SRC21_BYPASS( 32, 1, 0, add, 24, 13, 11 ) ;
+	TEST_RR_SRC21_BYPASS( 33, 1, 1, add, 25, 14, 11 ) ;
+	TEST_RR_SRC21_BYPASS( 34, 2, 0, add, 26, 15, 11 ) ;
+
+	TEST_RR_ZEROSRC1( 35, add, 15, 15 ) ;
+	TEST_RR_ZEROSRC2( 36, add, 32, 32 ) ;
+	TEST_RR_ZEROSRC12( 37, add, 0 )   ;
+
+	TEST_PASSFAIL
+
+PPCTEST_CODE_END
+
+	.data
+	PPCTEST_DATA_BEGIN
+	TEST_DATA
+	PPCTEST_DATA_END
