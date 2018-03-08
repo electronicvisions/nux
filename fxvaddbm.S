@@ -25,7 +25,7 @@ TEST_FXV_RR_OP(5, fxvaddbm, 0xff, 0xfe, 1, fxvsplatb, fxvstax, result_base) ;
 # Vector store
 #-------------------------------------------------------------
 
-TEST_FXV_RR_OP(6, fxvaddbm, 0x0a0a0a0a, 3, 7, fxvsplatb, fxvoutx, (1<<29)) ;
+# TEST_FXV_RR_OP(6, fxvaddbm, 0x0a0a0a0a, 3, 7, fxvsplatb, fxvoutx, (1<<29)) ;
 
 
 TEST_PASSFAIL
