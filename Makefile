@@ -1,10 +1,5 @@
-tests := \
-	simple \
-	fxvaddbm \
-	fxvaddhm \
-	fxvsubhm \
-	fxvmulbm \
-	add \
+simple_tests := simple load_immediate
+arithmetic_tests := add \
 	and \
 	or \
 	xor \
@@ -17,13 +12,26 @@ tests := \
 	mulhw \
 	mullw \
 	divw \
-	divu \
-#	stw \
-#	lwz \
+	divu
+
+vector_tests := \
+	fxvaddbm \
+	fxvaddhm \
+	fxvsubhm \
+	fxvmulbm
+
 #	external_memory_access \
 #	load_test \
 #	load_immediate \
 #	xori \
+
+
+load_store_tests := \
+	lwz \
+	stw \
+
+
+tests := $(vector_tests) $(arithmetic_tests) $(load_store_tests)
 
 .SUFFIXES: # Disable default rules
 .PHONY: all

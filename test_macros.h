@@ -322,7 +322,8 @@ test_ ## testnum: \
   LOAD_CONSTANT(8, res);				    \
   LOAD_CONSTANT(10, FXV_NUM_SLICES * FXV_BYTES_PER_SLICE) ; \
   add 11, 5, 10; \
-1: lwzux 7,6,4 ; \
+1: add 12, 6, 4; \
+  lwz 7,0(12); \
   cmpw 7, 8 ; \
   bne fail ; \
   addi 6, 6, 4 ; \
@@ -341,8 +342,24 @@ test_ ## testnum: \
 	     inst 31, 1, 2; \
 	     store_inst 31, 5, 4 ; \
 	     sync; \
+	     FXV_VERIFY_RESULT(res); \
 	     li 30, 1 ; \
 	     )
+
+/* #define TEST_FXV_RR_MASKED_OP(testnum, inst, val1, val2, load_inst, store_inst, mask_base, expected_base, result_base) \ */
+/*   TEST_CASE( testnum, 30, 1,						\ */
+/*     LOAD_CONSTANT(1, val1); \ */
+/*     LOAD_CONSTANT(2, val2); \ */
+/*     LOAD_CONSTANT(4, result_base);					\ */
+/*     LOAD_CONSTANT(5, expected_base);					\ */
+/*     LOAD_CONSTANT(6, mask_base);					\ */
+/*     LOAD_CONSTANT(7, testnum * FXV_NUM_SLICES * FXV_BYTES_PER_SLICE);	\ */
+/*     load_inst  */
+/*     load_inst 1, 1; \ */
+/*     load_inst 2, 2; \ */
+/*     inst 31, 1, 2; \ */
+
+
 
 
 #define TEST_PASSFAIL \

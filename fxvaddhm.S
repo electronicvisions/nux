@@ -17,10 +17,10 @@ PPCTEST_CODE_BEGIN
 #-------------------------------------------------------------
 
 TEST_FXV_RR_OP(2, fxvaddhm, 0, 0, 0, fxvsplath, fxvstax, result_base) ;
-TEST_FXV_RR_OP(3, fxvaddhm, 0x2, 1, 1, fxvsplath, fxvstax, result_base) ;
-TEST_FXV_RR_OP(4, fxvaddhm, 0xa, 3, 7, fxvsplath, fxvstax, result_base) ;
-TEST_FXV_RR_OP(5, fxvaddhm, 0xffff, 0x7fff, 0x8000, fxvsplath, fxvstax, result_base) ;
-TEST_FXV_RR_OP(6, fxvaddhm, 0xffff, 0xfffe, 0x0001, fxvsplath, fxvstax, result_base) ;
+TEST_FXV_RR_OP(3, fxvaddhm, 0x00020002, 1, 1, fxvsplath, fxvstax, result_base) ;
+TEST_FXV_RR_OP(4, fxvaddhm, 0x000a000a, 3, 7, fxvsplath, fxvstax, result_base) ;
+TEST_FXV_RR_OP(5, fxvaddhm, 0xffffffff, 0x7fff, 0x8000, fxvsplath, fxvstax, result_base) ;
+TEST_FXV_RR_OP(6, fxvaddhm, 0xffffffff, 0xfffe, 0x0001, fxvsplath, fxvstax, result_base) ;
 
 TEST_PASSFAIL
 

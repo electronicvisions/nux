@@ -17,9 +17,9 @@ PPCTEST_CODE_BEGIN
 #-------------------------------------------------------------
 
 TEST_FXV_RR_OP(2, fxvaddbm, 0, 0, 0, fxvsplatb, fxvstax, result_base) ;
-TEST_FXV_RR_OP(3, fxvaddbm, 0x2, 1, 1, fxvsplatb, fxvstax, result_base) ;
-TEST_FXV_RR_OP(4, fxvaddbm, 0xa, 3, 7, fxvsplatb, fxvstax, result_base) ;
-TEST_FXV_RR_OP(5, fxvaddbm, 0xff, 0xfe, 1, fxvsplatb, fxvstax, result_base) ;
+TEST_FXV_RR_OP(3, fxvaddbm, 0x02020202, 1, 1, fxvsplatb, fxvstax, result_base) ;
+TEST_FXV_RR_OP(4, fxvaddbm, 0x0a0a0a0a, 3, 7, fxvsplatb, fxvstax, result_base) ;
+TEST_FXV_RR_OP(5, fxvaddbm, 0xffffffff, 0xfe, 1, fxvsplatb, fxvstax, result_base) ;
 
 #-------------------------------------------------------------
 # Vector store
