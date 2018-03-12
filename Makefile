@@ -15,10 +15,16 @@ arithmetic_tests := add \
 	divu
 
 vector_tests := \
-	fxvaddbm \
 	fxvaddhm \
+	fxvaddhm_c \
+	fxvmulhm_c \
 	fxvsubhm \
-	fxvmulbm
+	fxvsubhm_c \
+	fxvaddbm \
+	fxvaddbm_c \
+	fxvmulbm \
+	fxvmulbm_c \
+	fxvsubbm_c
 
 #	external_memory_access \
 #	load_test \

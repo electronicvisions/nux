@@ -346,6 +346,41 @@ test_ ## testnum: \
 	     li 30, 1 ; \
 	     )
 
+
+#define FXV_CHECK_EQUAL(lhs, rhs) \
+	LOAD_CONSTANT(%r10, FXV_NUM_SLICES * FXV_BYTES_PER_SLICE / 4); \
+	mtctr %r10; \
+	lwz %r11, 0(lhs); \
+	lwz %r12, 0(rhs); \
+	b 2f; \
+1:	lwzu %r11, 4(lhs); \
+	lwzu %r12, 4(rhs); \
+2:	cmpw %r11, %r12 ; \
+	bne fail; \
+	bdnz 1b; \
+
+
+#define TEST_FXV_C_RR_OP(testnum, inst, size, expected_base, val1, val2, mask_base, default, cond, result_base) \
+	TEST_CASE( testnum, %r30, 1, \
+		LOAD_CONSTANT(%r1, val1); \
+		LOAD_CONSTANT(%r2, val2); \
+		LOAD_CONSTANT(%r3, mask_base); \
+		LOAD_CONSTANT(%r4, result_base + testnum * FXV_NUM_SLICES * FXV_BYTES_PER_SLICE); \
+		LOAD_CONSTANT(%r5, expected_base); \
+		LOAD_CONSTANT(%r6, default); \
+		fxvsplat ## size 1, %r1; \
+		fxvsplat ## size 2, %r2; \
+		fxvlax 3, 0, %r3; \
+		fxvsplat ## size 31, %r6; \
+		fxvcmp ## size 3; \
+		inst 31, 1, 2, cond; \
+		fxvstax 31, 0, %r4; \
+		sync; \
+		FXV_CHECK_EQUAL(%r4, %r5); \
+		li %r30, 1; \
+	)
+
+
 /* #define TEST_FXV_RR_MASKED_OP(testnum, inst, val1, val2, load_inst, store_inst, mask_base, expected_base, result_base) \ */
 /*   TEST_CASE( testnum, 30, 1,						\ */
 /*     LOAD_CONSTANT(1, val1); \ */
