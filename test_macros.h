@@ -380,6 +380,29 @@ test_ ## testnum: \
 		li %r30, 1; \
 	)
 
+#define TEST_FXV_C_ACC_RR_OP(testnum, inst, size, expected_base, val1, val2, mask_base, default, acc, cond, result_base) \
+	TEST_CASE( testnum, %r30, 1, \
+		LOAD_CONSTANT(%r1, val1); \
+		LOAD_CONSTANT(%r2, val2); \
+		LOAD_CONSTANT(%r3, mask_base); \
+		LOAD_CONSTANT(%r4, result_base + testnum * FXV_NUM_SLICES * FXV_BYTES_PER_SLICE); \
+		LOAD_CONSTANT(%r5, expected_base); \
+		LOAD_CONSTANT(%r6, acc); \
+		LOAD_CONSTANT(%r7, default); \
+		fxvsplat ## size 1, %r1; \
+		fxvsplat ## size 2, %r2; \
+		fxvlax 3, 0, %r3; \
+		fxvsplat ## size 4, %r6; \
+		fxvsplat ## size 31, %r7; \
+		fxvmtac ## size 4; \
+		fxvcmp ## size 3; \
+		inst 31, 1, 2, cond; \
+		fxvstax 31, 0, %r4; \
+		sync; \
+		FXV_CHECK_EQUAL(%r4, %r5); \
+		li %r30, 1; \
+	)
+
 
 /* #define TEST_FXV_RR_MASKED_OP(testnum, inst, val1, val2, load_inst, store_inst, mask_base, expected_base, result_base) \ */
 /*   TEST_CASE( testnum, 30, 1,						\ */

@@ -22,6 +22,7 @@ vector_tests := \
 	fxvsubhm_c \
 	fxvaddbm \
 	fxvaddbm_c \
+	fxvmabm_c \
 	fxvmulbm \
 	fxvmulbm_c \
 	fxvsubbm_c
