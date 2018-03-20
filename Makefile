@@ -18,6 +18,8 @@ vector_tests := \
 	fxvaddhm \
 	fxvaddhm_c \
 	fxvmulhm_c \
+	fxvinx \
+	fxvio \
 	fxvsubhm \
 	fxvsubhm_c \
 	fxvaddbm \

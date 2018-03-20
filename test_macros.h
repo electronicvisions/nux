@@ -404,6 +404,51 @@ test_ ## testnum: \
 	)
 
 
+#define TEST_SYNRAM_INX_LOOP(testnum, obus_addr, inx_addr, data_base, result_base) \
+	TEST_CASE( testnum, %r30, 1, \
+		LOAD_CONSTANT(%r1, data_base); \
+		LOAD_CONSTANT(%r2, obus_addr); \
+		LOAD_CONSTANT(%r3, FXV_NUM_SLICES * FXV_BYTES_PER_SLICE / 4) \
+		mtctr %r3; \
+		lwzu %r4, 0(%r1); \
+		stwu %r4, 0(%r2); \
+		bdnz 1f; \
+1:		lwzu %r4, 4(%r1); \
+		stwu %r4, 4(%r2); \
+		bdnz 1b; \
+		LOAD_CONSTANT(%r1, inx_addr); \
+		LOAD_CONSTANT(%r2, result_base); \
+		sync; \
+		fxvinx 1, 0, %r1; \
+		fxvstax 1, 0, %r2; \
+		sync; \
+		LOAD_CONSTANT(%r1, data_base); \
+		FXV_CHECK_EQUAL(%r1, %r2); \
+		li %r30, 1; \
+	)
+
+#define TEST_FXVIO_CONFLICT(testnum, veca, vecb, indexa, indexb, resa, resb) \
+	TEST_CASE( testnum, %r30, 1, \
+		LOAD_CONSTANT(%r1, veca); \
+		LOAD_CONSTANT(%r2, vecb); \
+		fxvlax 1, 0, %r1; \
+		fxvlax 2, 0, %r2; \
+		LOAD_CONSTANT(%r3, indexa); \
+		LOAD_CONSTANT(%r4, indexb); \
+		fxvoutx 1, 0, %r3; \
+		fxvoutx 2, 0, %r4; \
+		fxvinx 30, 0, %r3; \
+		fxvinx 31, 0, %r4; \
+		LOAD_CONSTANT(%r3, resa); \
+		LOAD_CONSTANT(%r4, resb); \
+		fxvstax 30, 0, %r3; \
+		fxvstax 31, 0, %r4; \
+		sync; \
+		FXV_CHECK_EQUAL(%r1, %r3); \
+		FXV_CHECK_EQUAL(%r2, %r4); \
+		li %r30, 1; \
+	)
+
 /* #define TEST_FXV_RR_MASKED_OP(testnum, inst, val1, val2, load_inst, store_inst, mask_base, expected_base, result_base) \ */
 /*   TEST_CASE( testnum, 30, 1,						\ */
 /*     LOAD_CONSTANT(1, val1); \ */
