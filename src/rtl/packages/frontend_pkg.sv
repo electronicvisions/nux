@@ -10,7 +10,7 @@
 
 
 package Frontend;
-  localparam int unsigned iaddr_width = 14;
+  localparam int unsigned iaddr_width = 32;
   localparam int unsigned num_threads = 1;
   localparam int unsigned num_fubs = 9;
 
@@ -18,7 +18,7 @@ package Frontend;
   localparam int unsigned div_latency = 31;//37; //28;
   localparam int unsigned ls_latency = 2; // allowed: 2,3
   localparam int unsigned ls_bus_latency = 3;//5;//7;   // expected latency when using the bus interface
-                                                // does not modify latency -> don't change
+						// does not modify latency -> don't change
   localparam int unsigned ls_bus_addr_latency = 2;  // latency for address updates when using the bus interface
   localparam int unsigned branch_latency = 1;  // does not modify latency -> don't change
   localparam int unsigned dev_ctrl_latency = 5;
@@ -199,7 +199,7 @@ package Frontend;
 
   typedef logic[$bits(Predecoded)-1:0] Predecoded_bits;
 
-  //const Predecoded predecoded_zeros = {    
+  //const Predecoded predecoded_zeros = {
     //1'b0, // logic read_ra;
     //1'b0, // logic read_rb;
     //1'b0, // logic read_rt;
@@ -277,12 +277,12 @@ package Frontend;
     rv.write_msr = '0;
 
     rv.fu_set        =  FUB_BRANCH;
-    rv.context_sync  = '0; 
-    rv.mem_bar       = '0; 
-    rv.halt          = '0; 
-    rv.nd_latency    = '0; 
-    rv.latency       = '0; 
-    rv.multicycles   = '0; 
+    rv.context_sync  = '0;
+    rv.mem_bar       = '0;
+    rv.halt          = '0;
+    rv.nd_latency    = '0;
+    rv.latency       = '0;
+    rv.multicycles   = '0;
     rv.is_multicycle = '0;
     rv.is_branch     = '0;
     rv.is_nop = 1'b0;
@@ -314,7 +314,7 @@ package Frontend;
     Fu_set_id rv;
     for(rv=0; rv<$bits(Fu_set); rv++)
       if(s[rv] == 1'b1)
-        break;
+	break;
     return (rv == $bits(Fu_set)) ? 0 : rv;
   endfunction
   //---------------------------------------------------------------------------
