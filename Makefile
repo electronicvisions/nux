@@ -27,7 +27,9 @@ vector_tests := \
 	fxvmulbm_c \
 	fxvsubbm_c
 
-#	external_memory_access \
+failing_tests := \
+	external_vector_access \
+	external_memory_access
 #	load_test \
 #	load_immediate \
 #	xori \
@@ -35,10 +37,9 @@ vector_tests := \
 
 load_store_tests := \
 	lwz \
-	stw \
+	stw
 
-
-tests := $(vector_tests) $(arithmetic_tests) $(load_store_tests)
+tests := $(failing_tests) $(vector_tests) $(arithmetic_tests) $(load_store_tests)
 
 .SUFFIXES: # Disable default rules
 .PHONY: all
