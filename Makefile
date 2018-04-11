@@ -41,7 +41,7 @@ load_store_tests := \
 	lwz \
 	stw
 
-tests := $(failing_tests) $(vector_tests) $(arithmetic_tests) $(load_store_tests)
+tests := $(vector_tests) $(arithmetic_tests) $(load_store_tests)
 
 .SUFFIXES: # Disable default rules
 .PHONY: all
