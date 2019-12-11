@@ -7,6 +7,15 @@
 # Helper macros
 #-----------------------------------------------------------------------
 
+#define immwidth 16
+#an immediate operand may only have 16 bits
+#immwidth-1 because of sign bit
+#establish sign bits, so compiler will not throw an error because of sign bit
+#define MASK_XLEN_LO(x) ((x) & ((1 << (immwidth-1)) - 1))
+#define MASK_XLEN_HI(x) ((x >> (32 - (immwidth))) & ((1 << (immwidth-1)) - 1))
+#define MASK_SIGN_LO(x) ((x) & (1 << (immwidth-1)))
+#define MASK_SIGN_HI(x) ((x >> (32 - (immwidth))) & (1 << (immwidth-1)))
+
 #define MASK_XLEN(x) ((x) & ((1 << (32 - 1) << 1) - 1))
 #define TESTNUM 31
 
@@ -21,6 +30,15 @@ test_ ## testnum: \
  li TESTNUM, testnum; \
  cmpw 29, testreg; \
  bne fail; \
+
+#define TEST_CASE_DAT( testnum, testreg, correctdat, code... ) \
+test_ ## testnum: \
+    code; \
+    li  %r28, correctdat; \
+    lwz  %r29, 0(%r28); \
+    li  TESTNUM, testnum; \
+    cmpw 0, testreg, %r29; \
+    bne 0, fail;
 
 #define TEST_INSERT_NOPS_0
 #define TEST_INSERT_NOPS_1  nop; TEST_INSERT_NOPS_0
@@ -121,6 +139,15 @@ test_ ## testnum: \
 	     LOAD_CONSTANT(2, MASK_XLEN(val2));	\
 	     inst 30, 1, 2; \
 	     )
+
+#define TEST_RR_DAT( testnum, inst, result, dat1, dat2 ) \
+    TEST_CASE_DAT( testnum, %r30, result, \
+      li  %r4, dat1 ## @l; \
+      lwz  %r1, 0(%r4); \
+      li  %r4, dat2 ## @l; \
+      lwz  %r2, 0(%r4); \
+      inst %r30, %r1, %r2; \
+    )
 
 #define TEST_RR_SRC1_EQ_DEST( testnum, inst, result, val1, val2 ) \
   TEST_CASE( testnum, 1, result, \
