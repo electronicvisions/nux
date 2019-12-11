@@ -1,6 +1,5 @@
 # See LICENSE for license details
 
-#include "chip_constants.h"
 #include "test_macros.h"
 
 .text

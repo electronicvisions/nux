@@ -1,0 +1,84 @@
+#!/usr/bin/python
+import os
+from os.path import join
+from waflib.extras.test_base import summary
+from waflib.extras.symwaf2ic import get_toplevel_path
+
+
+def depends(dep):
+    dep('haldls')
+    dep('code-format')
+
+
+def options(opt):
+    opt.load('nux_assembler')
+    opt.load('nux_compiler')
+    opt.load('pytest')
+
+
+def configure(cfg):
+    cfg.load('pytest')
+
+    env = cfg.env
+    cfg.setenv('s2pp_instructions')
+    cfg.load('nux_assembler')
+    cfg.load('nux_compiler')
+    cfg.load('objcopy')
+    cfg.env.append_value('ASLINKFLAGS', '-T' + join(get_toplevel_path(), 's2pp', 'tests', 'instructions', 'link.ld'))
+    # restore env
+    cfg.setenv('', env=env)
+
+
+def build(bld):
+    bld.env.DLSvx_HARDWARE_AVAILABLE = "cube" == os.environ.get("SLURM_JOB_PARTITION")
+    bld.env.DLSvx_SIM_AVAILABLE = "FLANGE_SIMULATION_RCF_PORT" in os.environ
+
+    bld(
+        target          = 's2pp_instructions_inc',
+        export_includes = 'src',
+    )
+
+    root = bld.path.find_dir("src")
+    skipped_tests = ['fxvaddbm_c.S',
+                     'fxvaddhm_c.S',
+                     'fxvmabm_c.S',
+                     'fxvinx.S',
+                     'fxvsubhm_c.S',
+                     'fxvsubbm_c.S',
+                     'fxvmulhm_c.S',
+                     'fxvmulbm_c.S',
+                     'load_external_instructions.S',
+                     'external_memory_access.S',
+                     'external_vector_access.S']
+
+    for file_name in root.listdir():
+        if not file_name.endswith(".S"):
+            continue
+        if file_name in skipped_tests:
+            continue
+
+        test_name = file_name.split(".S")[0]
+        bld.program(name=test_name,
+                    features="cxx use objcopy",
+                    objcopy_bfdname="binary",
+                    target="%s.bin" % test_name,
+                    use=['s2pp_instructions_inc'],
+                    source=[root.find_node(file_name)],
+                    env=bld.all_envs['s2pp_instructions']
+        )
+
+    bld(name="s2pp_instructions_hwsimtests",
+        tests="runner.py",
+        features="use pytest pylint pycodestyle",
+        use="dlens_vx",
+        install_path="${PREFIX}/bin/tests",
+        skip_run=not (bld.env.DLSvx_HARDWARE_AVAILABLE or bld.env.DLSvx_SIM_AVAILABLE),
+        env=bld.all_envs[""],
+        test_environ=dict(TEST_BINARY_PATH=os.path.join(get_toplevel_path(),
+                                                        "build",
+                                                        "s2pp")),
+        pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
+        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle")
+    )
+
+    bld.add_post_fun(summary)

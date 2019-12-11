@@ -1,4 +1,3 @@
-	#include "chip_constants.h"
 	#include "test_macros.h"
 	.text
 	.global _start

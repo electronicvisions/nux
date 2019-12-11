@@ -1,0 +1,9 @@
+@Library("jenlib") _
+
+wafDefaultPipeline(projects: ["s2pp"],
+                   moduleOptions: [modules: ["ppu-toolchain"]],
+                   container: [app: "visionary-dls"],
+                   testSlurmResource: [partition: "cube", wafer: 62, "fpga-without-aout": 3],
+                   testOptions: "-j1 --test-execall",
+                   testTimeout: 30,
+                   notificationChannel: "#dls-software")

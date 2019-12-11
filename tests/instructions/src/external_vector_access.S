@@ -1,4 +1,3 @@
-	#include "chip_constants.h"
 	#include "test_macros.h"
 	#include "ppc_test.h"
 	.text
