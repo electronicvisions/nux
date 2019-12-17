@@ -52,7 +52,7 @@ class S2PPInstructionTestsHwSimVx(unittest.TestCase):
                     load_and_start_program(cls.EXECUTOR, ppu_test.path)
                     try:
                         wait_until_ppu_finished(cls.EXECUTOR,
-                                                timeout=int(5e5))
+                                                timeout=int(1e4))
                     except PPUTimeoutError:
                         self.fail(
                             "Test did not go to sleep -> indicating failure.")
