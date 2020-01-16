@@ -138,6 +138,21 @@
     #5
 }
 
+% \fxvinstGPRc{name}{mnemnonic}{xo-code}{coding}{algorithm}{text}
+\newcommand{\fxvinstGPRc}[5]{%
+    \subsubsection[#2]{#1} % show mnemnonic in table of contents
+    \begin{bytefield}[bitwidth=0.5\textwidth/32]{32}
+        \bitheader{0,5,10,15,20,29,31} \\
+        \bitbox{6}{4}  \bitbox{5}{VRT}  \bitbox{5}{RA}  \bitbox{5}{RB}  \bitbox{9}{#3}  \bitbox{2}{C}
+    \end{bytefield} \\
+    \textbf{#2}\\
+    {\footnotesize
+    \begin{algorithmic}[1]
+        #4
+    \end{algorithmic} }
+    #5
+}
+
 % \fxvinstGPRa{name}{mnemnonic}{xo-code}{coding}{algorithm}{text}
 \newcommand{\fxvinstGPRa}[5]{%
     \subsubsection[#2]{#1} % show mnemnonic in table of contents

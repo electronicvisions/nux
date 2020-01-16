@@ -1004,7 +1004,7 @@ The width of this result is determined by the width of vectors (\code{OPT_VECTOR
 }
 
 
-\fxvinstGPR{Input indexed}{fxvinx}{236}{%
+\fxvinstGPRc{Input indexed}{fxvinx}{236}{%
     \If { RA = 0 }
         \State $a \gets (\text{RB})$
     \Else
@@ -1015,17 +1015,20 @@ The width of this result is determined by the width of vectors (\code{OPT_VECTOR
 
     \For {$0 \le i < \text{NUM\_SLICES}$}
         \For {$0 \le j < 16$}
-            \State $\text{VRT}_{j/16}^i \gets \underline{u}_{j/16}^i$
+            \State enable $\gets$ \Call{conditional}{C, VCR$^i_{j/16}$}
+            \If { enable }
+                \State $\text{VRT}_{j/16}^i \gets \underline{u}_{j/16}^i$
+            \EndIf
         \EndFor
     \EndFor
 }{%
     The effective address is computed from general purpose registers RA and RB.
     If RA is zero, then the effective address is taken from RB.
-    Data is loaded in parallel from the \gls{io} location referenced by the effective address and moved to the destination register VRT.
+    Data is loaded in parallel from the \gls{io} location referenced by the effective address and moved conditionally (if $C > 0$ it uses contents of condition register (VCR) for masking) to the destination register VRT.
 }
 
 
-\fxvinstGPR{Output indexed}{fxvoutx}{252}{%
+\fxvinstGPRc{Output indexed}{fxvoutx}{252}{%
     \If { RA = 0 }
         \State $a \gets (\text{RB})$
     \Else
@@ -1036,7 +1039,10 @@ The width of this result is determined by the width of vectors (\code{OPT_VECTOR
 
     \For {$0 \le i < \text{NUM\_SLICES}$}
         \For {$0 \le j < 16$}
-            \State $\underline{u}_{j/16}^i \gets \text{VRT}_{j/16}^i$
+            \State enable $\gets$ \Call{conditional}{C, VCR$^i_{j/16}$}
+            \If { enable }
+                \State $\underline{u}_{j/16}^i \gets \text{VRT}_{j/16}^i$
+            \EndIf
         \EndFor
     \EndFor
 
@@ -1045,6 +1051,7 @@ The width of this result is determined by the width of vectors (\code{OPT_VECTOR
     The effective address is computed from general purpose registers RA and RB.
     If RA is zero, then the effective address is taken from RB.
     The contents of registers VRT in all slices is written to the \gls{io} location referenced by the effective address.
+    If $C > 0$ the write is masked by the condition register (VCR).
 }
 
 \end{multicols}
