@@ -57,7 +57,8 @@ class S2PPInstructionTestsHwSimVx(unittest.TestCase):
                         self.fail(
                             "Test did not go to sleep -> indicating failure.")
                     finally:
-                        stop_program(cls.EXECUTOR)
+                        # s2pp instruction tests do not use the mailbox
+                        stop_program(cls.EXECUTOR, print_mailbox=False)
                 return test_func
             test_method = generate_test(test)
             test_method.__name__ = test.name
@@ -65,7 +66,7 @@ class S2PPInstructionTestsHwSimVx(unittest.TestCase):
 
     @classmethod
     def find_binaries(cls):
-        test_regex = re.compile(r'.*\.binary')
+        test_regex = re.compile(r'.*\.bin$')
         for path, _, files in os.walk(TEST_BINARY_PATH):
             for fname in files:
                 if test_regex.search(fname):

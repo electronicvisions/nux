@@ -76,7 +76,9 @@ def build(bld):
         env=bld.all_envs[""],
         test_environ=dict(TEST_BINARY_PATH=os.path.join(get_toplevel_path(),
                                                         "build",
-                                                        "s2pp")),
+                                                        "s2pp",
+                                                        "tests",
+                                                        "instructions")),
         pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
         pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
         test_timeout=10800
