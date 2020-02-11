@@ -1,12 +1,16 @@
 from __future__ import annotations
+
+import random
 import unittest
 from typing import Set
 from collections import namedtuple
 import re
 import os
 from dlens_vx.sta import PlaybackProgramExecutor, generate, DigitalInit
+from dlens_vx.halco import PPUOnDLS, iter_all
 from dlens_vx.tools.run_ppu_program import load_and_start_program, \
     stop_program, wait_until_ppu_finished, PPUTimeoutError
+from dlens_vx import logger
 
 _THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_BINARY_PATH = os.environ.get("TEST_BINARY_PATH",
@@ -49,16 +53,23 @@ class S2PPInstructionTestsHwSimVx(unittest.TestCase):
         for test in cls.TESTS:
             def generate_test(ppu_test: PpuHwTest):
                 def test_func(self: S2PPInstructionTestsHwSimVx):
-                    load_and_start_program(cls.EXECUTOR, ppu_test.path)
+                    log = logger.get("S2PPInstructionTestsHwSimVx.%s" %
+                                     ppu_test.name)
+                    ppu = random.choice(list(iter_all(PPUOnDLS)))
+                    log.info("Running test on %s." % ppu)
+
+                    load_and_start_program(cls.EXECUTOR, ppu_test.path, ppu)
                     try:
                         wait_until_ppu_finished(cls.EXECUTOR,
-                                                timeout=int(1e4))
+                                                timeout=int(1e4),
+                                                ppu=ppu)
                     except PPUTimeoutError:
                         self.fail(
                             "Test did not go to sleep -> indicating failure.")
                     finally:
                         # s2pp instruction tests do not use the mailbox
-                        stop_program(cls.EXECUTOR, print_mailbox=False)
+                        stop_program(cls.EXECUTOR, print_mailbox=False,
+                                     ppu=ppu)
                 return test_func
             test_method = generate_test(test)
             test_method.__name__ = test.name
