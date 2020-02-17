@@ -23,17 +23,33 @@ module Vector_rf
     input logic[NUM_ELEMS*ELEM_SIZE-1:0] data_w
   );
 
-  localparam int ENABLE_WIDTH = ELEM_SIZE / ENABLES_PER_ELEMENT;
+  //--------------------------------------------------------------------------------
+  // Local types
+  //--------------------------------------------------------------------------------
 
-  logic[127:0] bweb;
+  localparam int SUB_ELEMENT_SIZE = ELEM_SIZE / ENABLES_PER_ELEMENT;
+
+  typedef logic[NUM_ELEMS*ELEM_SIZE-1:0] Vector_raw;
+
+  //--------------------------------------------------------------------------------
+  // Local signals
+  //--------------------------------------------------------------------------------
+
+  Vector_raw bweb, write_bit_mask;
+
+  //--------------------------------------------------------------------------------
+  // Processes
+  //--------------------------------------------------------------------------------
 
   always_comb begin
     for(int i=0; i<NUM_ELEMS; i++) begin
       for(int j=0; j<ENABLES_PER_ELEMENT; j++) begin
-        bweb = {ENABLE_WIDTH{ ~write_mask[i][j] }}; 
+        write_bit_mask[$left(write_bit_mask) - i*ELEM_SIZE - j*SUB_ELEMENT_SIZE -: SUB_ELEMENT_SIZE] = {SUB_ELEMENT_SIZE{write_mask[i][j]}};
       end
     end
   end
+
+  assign bweb = ~write_bit_mask;
 
   TS5N65LPA32X128M2 sram (
     .CLK(clk),
