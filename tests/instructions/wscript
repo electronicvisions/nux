@@ -46,10 +46,7 @@ def build(bld):
                      'fxvsubhm_c.S',
                      'fxvsubbm_c.S',
                      'fxvmulhm_c.S',
-                     'fxvmulbm_c.S',
-                     'load_external_instructions.S',
-                     'external_memory_access.S',
-                     'external_vector_access.S']
+                     'fxvmulbm_c.S']
 
     for file_name in root.listdir():
         if not file_name.endswith(".S"):
