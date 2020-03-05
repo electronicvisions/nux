@@ -56,8 +56,7 @@ def build(bld):
 
         test_name = file_name.split(".S")[0]
         bld.program(name=test_name,
-                    features="cxx use objcopy",
-                    objcopy_bfdname="binary",
+                    features="cxx use",
                     target="%s.bin" % test_name,
                     use=['s2pp_instructions_inc'],
                     source=[root.find_node(file_name)],
