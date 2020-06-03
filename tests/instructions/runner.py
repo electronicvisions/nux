@@ -6,7 +6,8 @@ from typing import Set
 from collections import namedtuple
 import re
 import os
-from dlens_vx.sta import PlaybackProgramExecutor, generate, DigitalInit
+from dlens_vx.hxcomm import ManagedConnection
+from dlens_vx.sta import run, generate, DigitalInit
 from dlens_vx.halco import PPUOnDLS, iter_all
 from dlens_vx.tools.run_ppu_program import load_and_start_program, \
     stop_program, wait_until_ppu_finished, PPUTimeoutError
@@ -30,20 +31,21 @@ PpuHwTest = namedtuple("PpuHwTest", ["path", "name"])
 
 class S2PPInstructionTestsHwSimVx(unittest.TestCase):
     TESTS: Set[PpuHwTest] = set()
-    EXECUTOR = PlaybackProgramExecutor()
+    MANAGED_CONNECTION = ManagedConnection()
+    CONNECTION = None
 
     @classmethod
     def setUpClass(cls) -> None:
         # Connect to some executor (sim or hardware)
-        cls.EXECUTOR.connect()
+        cls.CONNECTION = cls.MANAGED_CONNECTION.__enter__()
         # Initialize the chip
         init_builder, _ = generate(DigitalInit())
-        cls.EXECUTOR.run(init_builder.done())
+        run(cls.CONNECTION, init_builder.done())
 
     @classmethod
     def tearDownClass(cls) -> None:
         # Disconnect the executor
-        cls.EXECUTOR.disconnect()
+        cls.MANAGED_CONNECTION.__exit__()
 
     @classmethod
     def generate_cases(cls):
@@ -58,9 +60,9 @@ class S2PPInstructionTestsHwSimVx(unittest.TestCase):
                     ppu = random.choice(list(iter_all(PPUOnDLS)))
                     log.info("Running test on %s." % ppu)
 
-                    load_and_start_program(cls.EXECUTOR, ppu_test.path, ppu)
+                    load_and_start_program(cls.CONNECTION, ppu_test.path, ppu)
                     try:
-                        wait_until_ppu_finished(cls.EXECUTOR,
+                        wait_until_ppu_finished(cls.CONNECTION,
                                                 timeout=int(1e4),
                                                 ppu=ppu)
                     except PPUTimeoutError:
@@ -68,7 +70,7 @@ class S2PPInstructionTestsHwSimVx(unittest.TestCase):
                             "Test did not go to sleep -> indicating failure.")
                     finally:
                         # s2pp instruction tests do not use the mailbox
-                        stop_program(cls.EXECUTOR, print_mailbox=False,
+                        stop_program(cls.CONNECTION, print_mailbox=False,
                                      ppu=ppu)
                 return test_func
             test_method = generate_test(test)
