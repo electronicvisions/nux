@@ -1,10 +1,18 @@
 @Library("jenlib") _
 
-wafDefaultPipeline(projects: ["s2pp"],
-                   moduleOptions: [modules: ["ppu-toolchain"]],
-                   container: [app: "visionary-dls"],
-                   testSlurmResource: [partition: "cube", wafer: 62, "fpga-without-aout": 3],
-                   preTestHook: { configureHxCubeBitfile() },
-                   testOptions: "-j1 --test-execall",
-                   testTimeout: 30,
-                   notificationChannel: "#dls-software")
+Map<String, Object> pipelineOptions = [
+		projects: ["s2pp"],
+		moduleOptions: [modules: ["ppu-toolchain"]],
+		container: [app: "dls"],
+		notificationChannel: "#dls-software"
+]
+
+if (!isTriggeredByGerrit()) {
+	pipelineOptions << [
+			testSlurmResource: [partition: "cube", wafer: 62, "fpga-without-aout": 3],
+			preTestHook: { configureHxCubeBitfile() },
+			testOptions: "--test-execall -j1",
+	]
+}
+
+wafDefaultPipeline(pipelineOptions)
