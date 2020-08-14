@@ -6,12 +6,12 @@ from typing import Set
 from collections import namedtuple
 import re
 import os
-from dlens_vx.hxcomm import ManagedConnection
-from dlens_vx.sta import run, generate, DigitalInit
-from dlens_vx.halco import PPUOnDLS, iter_all
-from dlens_vx.tools.run_ppu_program import load_and_start_program, \
+from dlens_vx_v1.hxcomm import ManagedConnection
+from dlens_vx_v1.sta import run, generate, DigitalInit
+from dlens_vx_v1.halco import PPUOnDLS, iter_all
+from dlens_vx_v1.tools.run_ppu_program import load_and_start_program, \
     stop_program, wait_until_ppu_finished, PPUTimeoutError
-from dlens_vx import logger
+from dlens_vx_v1 import logger
 
 _THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_BINARY_PATH = os.environ.get("TEST_BINARY_PATH",

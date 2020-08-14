@@ -66,7 +66,7 @@ def build(bld):
     bld(name="s2pp_instructions_hwsimtests",
         tests="runner.py",
         features="use pytest pylint pycodestyle",
-        use="dlens_vx",
+        use="dlens_vx_v1",
         install_path="${PREFIX}/bin/tests",
         skip_run=not (bld.env.DLSvx_HARDWARE_AVAILABLE or bld.env.DLSvx_SIM_AVAILABLE),
         env=bld.all_envs[""],
