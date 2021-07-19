@@ -39,14 +39,7 @@ def build(bld):
     )
 
     root = bld.path.find_dir("src")
-    skipped_tests = ['fxvaddbm_c.S',
-                     'fxvaddhm_c.S',
-                     'fxvmabm_c.S',
-                     'fxvinx.S',
-                     'fxvsubhm_c.S',
-                     'fxvsubbm_c.S',
-                     'fxvmulhm_c.S',
-                     'fxvmulbm_c.S']
+    skipped_tests = ['fxvinx.S']
 
     for file_name in root.listdir():
         if not file_name.endswith(".S"):
