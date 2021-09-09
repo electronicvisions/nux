@@ -9,7 +9,7 @@ Map<String, Object> pipelineOptions = [
 
 if (!isTriggeredByGerrit()) {
 	pipelineOptions << [
-			testSlurmResource: [partition: "cube", wafer: 62, "fpga-without-aout": 3],
+			testSlurmResource: [partition: "cube", wafer: 62, "fpga-without-aout": 0],
 			preTestHook: { configureHxCubeBitfile() },
 			testOptions: "--test-execall -j1",
 	]
