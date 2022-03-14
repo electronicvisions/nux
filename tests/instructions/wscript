@@ -1,6 +1,10 @@
 #!/usr/bin/python
+from enum import Enum, auto
 import os
 from os.path import join
+import re
+import yaml
+from waflib.Errors import BuildError
 from waflib.extras.test_base import summary
 from waflib.extras.symwaf2ic import get_toplevel_path
 
@@ -30,8 +34,38 @@ def configure(cfg):
 
 
 def build(bld):
-    bld.env.DLSvx_HARDWARE_AVAILABLE = "cube" == os.environ.get("SLURM_JOB_PARTITION")
-    bld.env.DLSvx_SIM_AVAILABLE = "FLANGE_SIMULATION_RCF_PORT" in os.environ
+    class TestTarget(Enum):
+        SOFTWARE_ONLY = auto()
+        HARDWARE = auto()
+        SIMULATION = auto()
+
+    if "FLANGE_SIMULATION_RCF_PORT" in os.environ:
+        bld.env.TEST_TARGET = TestTarget.SIMULATION
+
+        try:
+            chip_revision = int(os.environ.get("SIMULATED_CHIP_REVISION"))
+        except TypeError:
+            raise BuildError("Environment variable 'SIMULATED_CHIP_REVISION' "
+                             "not set or cannot be casted to integer.")
+        bld.env.CURRENT_SETUP = dict(chip_revision=chip_revision)
+    elif "SLURM_HWDB_YAML" in os.environ:
+        bld.env.TEST_TARGET = TestTarget.HARDWARE
+        slurm_licenses = os.environ.get("SLURM_HARDWARE_LICENSES")
+        hwdb_entries = os.environ.get("SLURM_HWDB_YAML")
+        fpga_id = int(re.match(r"W(?P<wafer>\d+)F(?P<fpga>\d+)",
+                               slurm_licenses)["fpga"])
+        fpgas = yaml.full_load(hwdb_entries)["fpgas"]
+        fpga = None
+        for entry in fpgas:
+            if entry["fpga"] == fpga_id:
+                fpga = entry
+                break
+        if not fpga:
+            raise BuildError("FPGA not found in hwdb")
+        bld.env.CURRENT_SETUP = fpga
+    else:
+        bld.env.TEST_TARGET = TestTarget.SOFTWARE_ONLY
+        bld.env.CURRENT_SETUP = dict(chip_revision=None)
 
     bld(
         target          = 's2pp_instructions_inc',
@@ -56,21 +90,23 @@ def build(bld):
                     env=bld.all_envs['s2pp_instructions']
         )
 
-    bld(name="s2pp_instructions_hwsimtests",
-        tests="runner.py",
-        features="use pytest pylint pycodestyle",
-        use="dlens_vx_v1",
-        install_path="${PREFIX}/bin/tests",
-        skip_run=not (bld.env.DLSvx_HARDWARE_AVAILABLE or bld.env.DLSvx_SIM_AVAILABLE),
-        env=bld.all_envs[""],
-        test_environ=dict(TEST_BINARY_PATH=os.path.join(get_toplevel_path(),
-                                                        "build",
-                                                        "s2pp",
-                                                        "tests",
-                                                        "instructions")),
-        pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
-        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
-        test_timeout=10800
-    )
+    for hx_version in [1, 2, 3]:
+        bld(name=f"s2pp_instructions_hwsimtests_v{hx_version}",
+            tests=f"runner_vx_v{hx_version}.py",
+            features="use pytest pylint pycodestyle",
+            use=f"dlens_vx_v{hx_version}",
+            install_path="${PREFIX}/bin/tests",
+            skip_run = (bld.env.TEST_TARGET == TestTarget.SOFTWARE_ONLY or
+                        not (int(bld.env.CURRENT_SETUP["chip_revision"]) == hx_version)),
+            env=bld.all_envs[""],
+            test_environ=dict(TEST_BINARY_PATH=os.path.join(get_toplevel_path(),
+                                                            "build",
+                                                            "s2pp",
+                                                            "tests",
+                                                            "instructions")),
+            pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
+            pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
+            test_timeout=10800
+        )
 
     bld.add_post_fun(summary)
