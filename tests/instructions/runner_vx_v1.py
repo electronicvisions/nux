@@ -55,10 +55,10 @@ class S2PPInstructionTestsHwSimVx(unittest.TestCase):
         for test in cls.TESTS:
             def generate_test(ppu_test: PpuHwTest):
                 def test_func(self: S2PPInstructionTestsHwSimVx):
-                    log = logger.get("S2PPInstructionTestsHwSimVx.%s" %
-                                     ppu_test.name)
+                    log = logger.get("S2PPInstructionTestsHwSimVx"
+                                     + f".{ppu_test.name}")
                     ppu = random.choice(list(iter_all(PPUOnDLS)))
-                    log.info("Running test on %s." % ppu)
+                    log.info(f"Running test on {ppu}.")
 
                     load_and_start_program(cls.CONNECTION, ppu_test.path, ppu)
                     try:
