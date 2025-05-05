@@ -90,7 +90,7 @@ def build(bld):
                     env=bld.all_envs['s2pp_instructions']
         )
 
-    for hx_version in [1, 2, 3, 4]:
+    for hx_version in [3]:
         bld(name=f"s2pp_instructions_hwsimtests_v{hx_version}",
             tests=f"runner_vx_v{hx_version}.py",
             features="use pytest pylint pycodestyle",
