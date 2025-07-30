@@ -39,7 +39,8 @@ class S2PPInstructionTestsHwSimVx(unittest.TestCase):
         # Connect to some executor (sim or hardware)
         cls.CONNECTION = cls.MANAGED_CONNECTION.__enter__()  # pylint: disable=unnecessary-dunder-call
         # Initialize the chip
-        init_builder, _ = generate(DigitalInit())
+        init_builder, _ = generate(DigitalInit(
+            cls.CONNECTION.get_hwdb_entry()))
         run(cls.CONNECTION, init_builder.done())
 
     @classmethod
