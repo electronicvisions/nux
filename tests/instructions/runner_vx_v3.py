@@ -7,7 +7,7 @@ from collections import namedtuple
 import re
 import os
 from dlens_vx_v3.hxcomm import ManagedConnection
-from dlens_vx_v3.sta import run, generate, DigitalInit
+from dlens_vx_v3.sta import run, generate, SystemInit
 from dlens_vx_v3.halco import PPUOnDLS, iter_all
 from dlens_vx_v3.tools.run_ppu_program import load_and_start_program, \
     stop_program, wait_until_ppu_finished, PPUTimeoutError
@@ -39,7 +39,7 @@ class S2PPInstructionTestsHwSimVx(unittest.TestCase):
         # Connect to some executor (sim or hardware)
         cls.CONNECTION = cls.MANAGED_CONNECTION.__enter__()  # pylint: disable=unnecessary-dunder-call
         # Initialize the chip
-        init_builder, _ = generate(DigitalInit(
+        init_builder, _ = generate(SystemInit(
             cls.CONNECTION.get_hwdb_entry()[0]))
         run(cls.CONNECTION, init_builder.done())
 
