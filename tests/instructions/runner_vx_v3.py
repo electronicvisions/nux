@@ -41,7 +41,8 @@ class S2PPInstructionTestsHwSimVx(unittest.TestCase):
         # Initialize the chip
         init_builder, _ = generate(SystemInit(
             cls.CONNECTION.get_hwdb_entry()[0]))
-        run(cls.CONNECTION, init_builder.done())
+        init_program = init_builder.done()
+        run(cls.CONNECTION, [init_program])
 
     @classmethod
     def tearDownClass(cls) -> None:
