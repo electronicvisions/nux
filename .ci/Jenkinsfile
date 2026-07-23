@@ -15,4 +15,6 @@ if (!isTriggeredByGerrit()) {
 	]
 }
 
-wafDefaultPipeline(pipelineOptions)
+withCcache() {
+	wafDefaultPipeline(pipelineOptions)
+}
